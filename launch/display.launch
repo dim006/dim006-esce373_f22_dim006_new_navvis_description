@@ -1,0 +1,34 @@
+<launch>
+<!-- Create an argument to determine whether to use a XACRO or URDF file. -->
+<arg name="use_xacro" default="false" />
+<arg name="use_gui" default="true" />
+<!-- The filename can be passed into the launch file to override the default. -->
+<arg if="$(arg use_xacro)" name="filename" default="navvis1.xacro" />
+<arg unless="$(arg use_xacro)" name="filename" default="navvis1.urdf" />
+<!-- The full path of the URDF/XACRO file can be passed into the launch file
+instead.  -->
+<arg name="file" default="$(find navvis_description)/urdf/$(arg filename)" />
+<!-- Use the file argument as the name of the file used to set the
+/robot_description parameter on the parameter server -->
+<param if="$(arg use_xacro)" name="robot_description" command="$(find
+xacro)/xacro --inorder $(arg file)" />
+<param unless="$(arg use_xacro)" name="robot_description" textfile="$(arg file)"
+/>
+
+<arg name="use_robot_state_publisher" default="true" />
+<node if="$(arg use_robot_state_publisher)" pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" />
+
+<!-- Run the robot_state_publisher. -->
+
+<node if="$(arg use_gui)" pkg="joint_state_publisher_gui" type="joint_state_publisher_gui" name="joint_state_publisher_gui" />
+<node unless="$(arg use_gui)" pkg="joint_state_publisher" type="joint_state_publisher" name="joint_state_publisher" />
+<node unless="$(arg use_gui)" pkg="tf2_ros" type="static_transform_publisher" name="wheel_left" args="0.0 0.365 0.2 -1.57 0.0 0.0 base wheel_left_joint" />
+<node unless="$(arg use_gui)" pkg="tf2_ros" type="static_transform_publisher" name="wheel_right" args="0.0 -0.365 0.2 -1.57 0.0 0.0 base wheel_right_joint" />
+<node unless="$(arg use_gui)" pkg="tf2_ros" type="static_transform_publisher" name="wheel_center" args="0.0 -0.365 0.2 -1.57 0.0 0.0 base wheel_center_joint" />
+<node unless="$(arg use_gui)" pkg="rostopic" type="rostopic" name="rostopic" args="pub -1 /joint_states sensor_msgs/JointState '{header: {seq: 1, stamp: {secs: 1, nsecs: 0}, frame_id: 'base'}, name: ['base_wheel_left_joint', 'base_wheel_right_joint'] position: [0.0, 0.0] velocity: [0, 0] effort: [0, 0]'" />
+
+<!-- Run RVIZ with a configuration file.  If RVIZ is closed, close everything. -->
+<node pkg="rviz" type="rviz" name="rviz" args="-d $(find
+navvis_description)/config/config.rviz" required="true" />
+
+</launch>

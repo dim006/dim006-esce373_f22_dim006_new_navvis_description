@@ -1,0 +1,24 @@
+<launch>
+
+<arg name="bag_path" default="$(find new_navvis_description)/bag_files/glennan_5_complete.bag" />
+<arg name="bag_args" default="/tf_trajectory:=/tf --clock" />
+<arg name="map_config_path" default="$(find maps_glennan)/maps/glennan5_map.yaml" />
+
+
+<include file="$(find navvis_description)/launch/display.launch" >
+<arg name="use_xacro" value="true" />
+<arg name="file" value="$(find new_navvis_description)/urdf/new_navvis.xacro" />
+<arg name="use_gui" value="true" />
+<arg name="use_robot_state_publisher" value="true" />
+</include>
+
+<node pkg="rosbag" type="play" name="rosbag" args="$(arg bag_path) $(arg bag_args)" /> 
+<node pkg="map_server" type="map_server" name="map_server" args="$(arg map_config_path)" /> 
+
+
+<!--https://wiki.ros.org/tf2/Tutorials/Writing%20a%20tf2%20static%20broadcaster%20%28C%2B%2B%29-->
+<node pkg="tf2_ros" type="static_transform_publisher" name="wheel_center_broadcaster" args="0.1 0 0 -1.57079632679 0 0 base wheel_center"/>
+<node pkg="tf2_ros" type="static_transform_publisher" name="wheel_left_broadcaster" args="-0.10 0.4 0.0 -1.57079632679 0.0 0.0 base wheel_left"/>
+<node pkg="tf2_ros" type="static_transform_publisher" name="wheel_right_broadcaster" args="-0.10 -0.4 0.0 -1.57079632679 0.0 0.0 base wheel_right"/>
+
+</launch>
